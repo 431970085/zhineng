@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="./static/layui/css/layui.css"/>
+    <link rel="stylesheet" href="./static/layui/style/admin.css" media="all">
+    <link rel="stylesheet" href="./static/layui/style/login.css" media="all">
+    <script src="./static/layui/layui.js"></script>
+
+    <script src="./static/js/vue.js"></script>
+    <script src="./static/js/axios.min.js"></script>
+    <script src="request.js"></script>
+    <script src="./static/js/jquery-1.9.1.min.js"></script>
+    <script src="./static/js/common.js"></script>
+</head>
+<body class="my-body-info">
+<div id="app">
+    <!--导航条 start-->
+    <ul class="layui-nav layui-bg-blue" id="navDIV" lay-filter="" id="navDIV"
+        style="margin-bottom: 0px;text-align: center;">
+
+    </ul>
+    <!--导航条 end-->
+
+
+    <!--轮播图 //-->
+
+    <div class="layui-carousel" id="test1">
+        <div carousel-item="" id="carouselListDiv">
+        </div>
+    </div>
+    <!--轮播图 \\-->
+
+
+    <!--数据内容区域 \\-->
+
+    <div class="layui-container layadmin-cmdlist-fluid" style="padding-top: 30px;min-height: 500px;">
+
+        <!-- 个人收藏课程列表 -->
+        <div class="layui-col-md12">
+            <div class="course-list">
+                <fieldset class="layui-elem-field layui-field-title site-title"
+                          style="text-align: center; margin: 0px;">
+                    <legend><a name="compatibility">个人收藏列表</a></legend>
+                </fieldset>
+                <div id="course-container">
+
+                    <div class="layui-col-md3" v-for="(v,index) in myDataList">
+                        <div class="course-item">
+                            <img :src="v.picurl" alt="课程封面" class="course-cover">
+                            <div class="course-info">
+                                <div class="course-title" style="text-align: center;">{{ v.dataname }}</div>
+                                <div class="course-duration" style="text-align: center;">
+                                        <span href="#" @click="showDetail($event)" :dataid="v.id"
+                                              class="layui-btn layui-btn-normal layui-btn-sm">查看</span>
+                                    <span href="#" @click="deleteInfo($event)" :dataid="v.scid"
+                                          class="layui-btn layui-btn-danger layui-btn-sm">删除</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+    <!--数据内容区域 //-->
+
+
+    <!--版权区域 \\-->
+    <div class="layui-footer footer footer-index"
+         style="text-align: center;background-color: rgba(0,0,0,0.8);padding: 10px;font-size: 15px;color: #eee;">
+        <div class="layui-main">
+            <h4>© {{ mySystemName }} 版权所有</h4>
+            <p>
+                {{ mySystemName }} 前端页面
+            </p>
+        </div>
+    </div>
+    <!--版权区域 //-->
+
+</div>
+</body>
+
+
+<script>
+
+
+    //注意：导航 依赖 element 模块，否则无法进行功能性操作
+    var select1_sex; //性别使用
+    var layer;
+    layui.use(['element', 'layer', "form"], function () {
+        var element = layui.element;
+        layer = layui.layer;
+        form = layui.form;
+        //…
+    });
+    layui.use('carousel', function () {
+        var carousel = layui.carousel;
+        //建造实例
+        carousel.render({
+            elem: '#test1'
+            , width: '100%' //设置容器宽度
+            , arrow: 'always' //始终显示箭头
+            //, anim: 'updown' //切换动画方式
+        });
+    });
+
+    layui.use('form', function () {
+        var form = layui.form;
+        form.on("select(select01)", function (data) {
+            select1_sex = data.value;
+        });
+
+    });
+
+    var app = new Vue({
+        el: '#app',
+        data() {
+            return {
+                mySystemName: "",   //系统名称
+                loginUserinfo: {},//用户登录信息存储
+                keyword: "",   //搜素关键词
+                myDataList: []  //数据存储
+            }
+        },
+        created() {
+            this.mySystemName = mySystemName;//加载系统名称
+            getCarouselList();//查询轮播图
+            this.getLoginUserinfo();
+            this.getSysteminfo();
+            this.getMyDataListList();
+        },
+        mounted() {
+
+        },
+        methods: {
+            getSysteminfo() { //加载系统配置
+
+            },
+            getLoginUserinfo() { //获取登录用户
+                if (sessionStorage.getItem('loginUserinfo') != null) {
+                    this.loginUserinfo = JSON.parse(sessionStorage.getItem('loginUserinfo'));//获取登录信息
+                }
+            },
+            deleteInfo(e) { //删除信息
+                var that = this;
+                var dataid = e.target.getAttribute('dataid');
+                var url = '/updateAction';
+                var data = {"sql": `delete  from shoucang where id='${dataid}' `}
+                post(url, data).then(response => {
+                    that.getMyDataListList();
+                    layer.msg("刪除成功");
+
+                }).catch(err => {
+                    console.log(err);
+                });
+            },
+            showDetail(e) { //显示详情
+                var dataid = e.target.getAttribute('dataid');
+                sessionStorage.setItem("datainfoid", dataid);
+                location.href = "detail.html";
+            },
+            editInfo(e) { //显示详情
+                var dataid = e.target.getAttribute('dataid');
+                sessionStorage.setItem("editdatainfoid", dataid);
+                location.href = "send.html";
+            },
+            getMyDataListList() { //加载数据
+                var that = this;
+                var url = '/selectAction';
+                var uid = this.loginUserinfo.id;
+                var data = {"sql": ` select shoucang.id scid,datainfo.* from datainfo,shoucang WHERE shoucang.tid=datainfo.id and uid='${uid}' `}
+                post(url, data).then(response => {
+                    that.myDataList = response.data;
+                }).catch(err => {
+                    console.error(err);
+                });
+            }
+        }
+    });
+
+
+</script>
+<style>
+
+
+    /* 头像样式 */
+    .avatar-container {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 标签样式 */
+    .tags {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .tag {
+        display: inline-block;
+        background-color: #f0f0f0;
+        padding: 8px 15px;
+        margin: 5px;
+        border-radius: 20px;
+        font-size: 14px;
+        color: #333;
+    }
+
+    /* 收藏课程列表样式 */
+    .course-list {
+        margin-bottom: 20px;
+    }
+
+    .course-list h2 {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    .course-item {
+        display: inline-block;
+        width: 80%;
+        margin: 10px;
+        border: 1px solid #e2e2e2;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .course-item:hover {
+        transform: translateY(-5px);
+    }
+
+    .course-cover {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+    }
+
+    .course-info {
+        padding: 10px;
+    }
+
+    .course-title {
+        font-size: 15px;
+        font-weight: bold;
+        margin-bottom: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .course-duration {
+        font-size: 14px;
+        color: #777;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* 好友列表样式 */
+    .friend-list h2 {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    .friend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .friend-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 10px;
+    }
+
+    .friend-name {
+        font-size: 16px;
+    }
+</style>
+<style>
+    body {
+        background: url('static/bg_demo.jpg');
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        background-attachment: fixed;
+        height: auto;
+    }
+
+    .layadmin-cmdlist-fluid {
+        background: rgba(255, 255, 255, 0.80);
+        margin-top: 0px;
+        padding-top: 30px;
+    }
+</style>
+</html>

@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>系统首页</title>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+
+    <link rel="stylesheet" type="text/css" href="./static/layui/css/layui.css"/>
+    <link rel="stylesheet" href="./static/layui/style/admin.css" media="all">
+    <link rel="stylesheet" href="./static/layui/style/template.css" media="all">
+    <script src="./static/layui/layui.js"></script>
+    <script src="./static/js/vue.js"></script>
+    <script src="./static/js/axios.min.js"></script>
+    <script src="request.js"></script>
+</head>
+<body class="my-body-info">
+<div id="app" class="layadmin-cmdlist-fluid" style="margin-top: 0px;padding-top: 0px;">
+    <!--导航条 start-->
+    <ul class="layui-nav layui-bg-blue" id="navDIV" lay-filter="" id="navDIV"
+        style="margin-bottom: 0px;text-align: center;">
+
+    </ul>
+    <!--导航条 end-->
+
+    <!--轮播图 //-->
+
+    <div class="layui-carousel" id="test1">
+        <div carousel-item="" id="carouselListDiv">
+        </div>
+    </div>
+    <!--轮播图 \\-->
+
+
+    <!--数据内容区域 \\-->
+
+    <div class="layui-container layadmin-cmdlist-fluid" style="padding-top: 30px;margin: 0px auto;border-radius:10px;">
+        <div class="layui-row layui-col-space5">
+            <div class="mainTop layui-clear">
+                <div class="fr">
+                    <form class="layui-form" action="#" onsubmit="return false;" method="post">
+                        <div class="layui-form-item">
+                            <div class="layui-inline" style="text-align: left;">
+
+                                <div class="layui-input-inline">
+                                    <input type="text" class="layui-input dateIcon" name="keyword" id="keyword"
+                                           v-model="keyword"
+                                           placeholder="请输入搜索关键词"
+                                           style="width: 200px;">
+                                </div>
+                                <div class="layui-input-inline">
+                                    <select name="sorttype" id="sorttype" class="layui-select" lay-filter="select01">
+                                        <option value="">请选择分类</option>
+                                    </select>
+                                </div>
+                                <div class="layui-input-inline">
+                                    <select name="orderStr" id="orderStr" class="layui-select" lay-filter="select02">
+                                        <option value="">请选择排序</option>
+                                        <option value=" order by id asc ">最早添加</option>
+                                        <option value=" order by id desc ">最新添加</option>
+                                    </select>
+                                </div>
+                                <div class="layui-input-inline">
+                                    <button @click="mySearch()" type="submit" class="layui-btn layui-btn-blue"><i
+                                            class="layui-icon layui-icon-search"></i> 搜索
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+
+            <div class="layui-col-md3 layui-col-sm6" v-for="v in myDataList.records">
+                <div class="cmdlist-container" @click="showDetail(v.id)">
+                    <a href="#"
+                       style="text-align: center;width: 100%;display: block;padding-top: 10px;">
+                        <img :src="v.picurl" style="width: 90%;height: 200px;">
+                    </a>
+                    <a href="#">
+                        <div class="cmdlist-text">
+                            <p class="info" style="height: 20px;text-align: center;"><a
+                                    href="">{{ v.title }}</a></p>
+                            <div class="price">
+                                <b><span style="">{{ v.author }}</span></b>
+                                <p>分类：{{ v.type }}</p>
+                                <span class="flow addCartBtn"><i
+                                        class="layui-icon layui-icon-fire"></i>
+                                    查看
+                                </span>
+                                &nbsp;&nbsp;&nbsp;
+                                <span>
+
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="layui-col-md12 layui-col-sm12">
+                <div id="demo0"></div>
+            </div>
+        </div>
+
+
+        <!--数据内容区域 //-->
+
+        <!--分页导航  \\-->
+        <div style="text-align: center">
+            <div class="layui-btn-group">
+                <button pnum="1" @click="loadPageNum($event)" class="layui-btn layui-btn-primary layui-btn-sm">首页
+                </button>
+                <button v-if="myDataList.current>1" :pnum="myDataList.current-1" @click="loadPageNum($event)"
+                        class="layui-btn layui-btn-primary layui-btn-sm">上一页
+                </button>
+                <button v-for="(k,index) in pageArr" :pnum="k"
+                        @click="loadPageNum($event)"
+                        class="layui-btn  layui-btn-primary layui-btn-sm"
+                        :style="myDataList.current==k ? {backgroundColor: '#009688',color:'#fff'} : {}">{{ k }}
+                </button>
+
+                <button v-if="myDataList.current<myDataList.pages" :pnum="myDataList.current+1"
+                        @click="loadPageNum($event)"
+                        class="layui-btn layui-btn-primary layui-btn-sm">下一页
+                </button>
+                <button :pnum="myDataList.pages" @click="loadPageNum($event)"
+                        class="layui-btn layui-btn-primary layui-btn-sm">尾页
+                </button>
+                <button class="layui-btn layui-btn-primary layui-btn-sm">共{{ myDataList.total }}条记录</button>
+            </div>
+        </div>
+
+        <div style="height: 30px;"></div>
+        <!--分页导航  //-->
+
+    </div>
+
+    <!--版权区域 \\-->
+    <div class="layui-footer footer footer-index"
+         style="text-align: center;background-color: rgba(0,0,0,0.8);padding: 10px;font-size: 15px;color: #eee;">
+        <div class="layui-main">
+            <h4>© {{mySystemName}} 版权所有</h4>
+            <p>
+                {{mySystemName}} 前端页面
+            </p>
+        </div>
+    </div>
+    <!--版权区域 //-->
+
+</div>
+</body>
+
+
+<script>
+
+
+    //注意：导航 依赖 element 模块，否则无法进行功能性操作
+    var layer;
+    var select01 = "";
+    var select02 = " order by  id asc  ";
+    layui.use(['element', 'layer', 'laydate'], function () {
+        var element = layui.element;
+        layer = layui.layer;
+        laydate = layui.laydate;
+
+        //日期选择器
+        laydate.render({
+            elem: '#keywordDate'
+            , type: 'date' //默认，可不填
+        });
+
+        //…
+    });
+    layui.use('carousel', function () {
+        var carousel = layui.carousel;
+        //建造实例
+        carousel.render({
+            elem: '#test1'
+            , width: '100%' //设置容器宽度
+            , arrow: 'always' //始终显示箭头
+            //, anim: 'updown' //切换动画方式
+        });
+    });
+
+    layui.use('form', function () {
+        var form = layui.form;
+        form.on("select(select01)", function (data) {
+            select01 = data.value;
+        });
+
+    });
+
+    layui.use('form', function () {
+        var form = layui.form;
+        form.on("select(select02)", function (data) {
+            select02 = data.value;
+        });
+
+    });
+
+    layui.use('form', function () {
+        var form = layui.form;
+
+
+        form.on('submit(formDemo)', function (data) {
+            layer.msg(JSON.stringify(data.field));
+            return false;
+        });
+    });
+
+
+    // 存储
+    var app = new Vue({
+        el: '#app',
+        data() {
+            return {
+                loginUserinfo: {},//用户登录信息存储
+                mySystemName: "",   //搜素关键词
+                keywordDate: "",   //搜素关键词
+                keyword: "",   //搜素关键词
+                pageNum: 1,   //分页页码
+                pageArr: [],   //分页页码数组
+                sorttype: "",   //搜素关键词
+                sorttypelList: [],  //数据存储
+                myDataList: []  //数据存储
+            }
+        },
+        created() {
+            this.mySystemName = mySystemName;//加载系统名称
+            this.getMyDataListList();
+            this.getLoginUserinfo();
+            this.getSysteminfo();
+            this.loadSorttypeList();
+        },
+        mounted() {
+            getCarouselList();//查询轮播图
+            getMySorttypeList();
+            this.getConfigCarousel();
+
+        },
+        updated() {
+
+            layui.use('form', function () {
+                var form = layui.form;
+                form.render('select');//更新下拉款
+            });
+        },
+        methods: {
+            //  this.getConfigCarousel();
+            getConfigCarousel() { //加载系统配置
+                var url = '/selectAction';
+                var data = {"sql": "select * from carousel "}
+                post(url, data).then(response => {
+                    console.log("延迟查询...");
+                    sessionStorage.setItem("carouselList", JSON.stringify(response.data));
+                    localStorage.setItem("carouselList", JSON.stringify(response.data));
+                }).catch(err => {
+                    console.log(err);
+                });
+            },
+            loadSorttypeList() { //加载分类下拉框
+                let datadivID = document.getElementById("sorttype");
+                datadivID.innerHTML = "";
+                var dataList = JSON.parse(sessionStorage.getItem('sorttypelList'));
+                var ss = "<option value=''>请选择分类</option>";
+                for (let i = 0; i < dataList.length; i++) {
+                    var obj = dataList[i];
+                    ss = ss + "<option value='" + obj.sortname + "'>" + obj.sortname + "</option>";
+                }
+                datadivID.innerHTML = ss;
+            },
+            shoucang(tid) {
+                if (!this.loginUserinfo.name) {
+                    layer.alert("用户登陆以后才可以收藏");
+                    return false;
+                }
+                var that = this;
+                var obj = {"id": 0, "uid": this.loginUserinfo.id, "tid": tid};
+                var url = '/updateAction';
+                var data = {
+                    "sql": `insert into shoucang (id, tid, uid)
+                            values ('${obj.id}', '${obj.tid}', '${obj.uid}')`
+                }
+                post(url, data).then(response => {
+                    that.getMyDataListList();//加载列表
+                    layer.msg("收藏成功");  //弹窗提示
+                    that.isDataShow = 1; //隐藏列表
+                }).catch(err => {
+                    console.error(err);
+                });
+            },
+            getSysteminfo() { //加载系统配置
+
+                if (sessionStorage.getItem('sorttypelList') != null) {
+                    this.sorttypelList = JSON.parse(sessionStorage.getItem('sorttypelList'));//获取登录信息
+                }
+            },
+            getLoginUserinfo() { //获取登录用户
+                if (sessionStorage.getItem('loginUserinfo') != null) {
+                    this.loginUserinfo = JSON.parse(sessionStorage.getItem('loginUserinfo'));//获取登录信息
+                }
+            },
+            getMyDataListList() { //加载数据
+                var url = '/selectPageAction';
+                var sorttype = this.sorttype;
+                var keyword = this.keyword;
+                var orderStr = select02;
+                sql = ` select *
+                        from datainfo
+                        where 1 = 1  `;
+                if (keyword != '') {
+                    sql += ` and  title like '%${keyword}%'   `;
+                }
+                if (select01 != '') {
+                    sql += ` and type like '%${select01}%'  `;
+                }
+                if (sorttype != '') {
+                    sql += ` and  type like '%${sorttype}%'  `;
+                }
+                sql += ` ${orderStr}   `;
+                var data = {"sql": sql, "p": this.pageNum, "pageSize": 12}
+                post(url, data).then(response => {
+                    this.myDataList = response.data;
+                    this.countPageNums(); //计算页码
+                    //console.log(response.data);
+                    //layer.msg("数据查询成功");
+                }).catch(err => {
+                    console.log(err);
+                });
+            },
+            countPageNums() {  //计算显示页码
+                var startNum = 1;
+                var endNum = this.myDataList.pages;
+                if (this.myDataList.current - 3 > 1) {
+                    startNum = this.myDataList.current - 3;
+                }
+                if (this.myDataList.current + 3 < this.myDataList.pages) {
+                    endNum = this.myDataList.current + 3;
+                }
+                var pageArr = [];
+                for (let i = startNum; i <= endNum; i++) {
+                    pageArr.push(i);
+                }
+                this.pageArr = pageArr;
+            },
+            showDetail(dataid) { //显示详情
+                sessionStorage.setItem("datainfoid", dataid);
+                location.href = "detail.html";
+            },
+            mySearch() {  //搜索
+                this.getMyDataListList();
+            },
+            loadPageNum(e) {  //分页加载
+                var p = e.target.getAttribute('pnum');
+                this.pageNum = p;
+                this.getMyDataListList();
+            },
+            loginOut() {  //搜索
+                loginOut(); //调用request.js中方法
+            },
+            selectType(e) {
+                var vv = e.target.innerHTML;
+                console.log("点击分类：" + vv);
+                this.sorttype = event.target.innerHTML;
+                this.getMyDataListList();
+            },
+
+        }
+    });
+
+
+</script>
+
+<style>
+    .fl {
+        float: left;
+    }
+
+    .fr {
+        float: right;
+    }
+
+    .mb10 {
+        margin-bottom: 10px;
+    }
+
+    .sideBlock {
+        padding: 24px;
+    }
+
+    .layui-form-item .layui-input-inline {
+        width: auto;
+    }
+
+    .layui-input, .layui-select, .layui-textarea {
+        height: 36px;
+    }
+
+    .layui-form-label {
+        padding: 8px 15px;
+    }
+
+    .layui-form-switch {
+        height: 34px;
+        line-height: 34px;
+        margin-top: 0;
+        min-width: 54px;
+    }
+
+    .layui-form-switch i {
+        width: 24px;
+        height: 24px;
+        top: 5px;
+    }
+
+    .layui-form-onswitch i {
+        margin-left: -28px;
+        top: 5px;
+    }
+
+    .layui-form-switch em {
+        margin-left: 27px;
+    }
+
+    .layui-form-onswitch em {
+        margin-left: 5px;
+    }
+
+    .layui-btn {
+        height: 36px;
+    }
+
+    /*修改颜色风格-蓝色 */
+    .layui-form-select dl dd.layui-this {
+        background-color: #02a7f0;
+    }
+
+    .layui-btn-blue {
+        background-color: #02a7f0;
+    }
+
+    .layui-form-onswitch {
+        border-color: #02a7f0;
+        background-color: #02a7f0;
+    }
+
+    .layui-form-radio > i:hover, .layui-form-radioed > i {
+        color: #02a7f0;
+    }
+
+    .layui-form-checked[lay-skin=primary] i {
+        border-color: #02a7f0;
+        background-color: #02a7f0;
+    }
+
+    .layui-form-checkbox[lay-skin=primary]:hover i {
+        border-color: #02a7f0;
+    }
+
+    body {
+        background: url(static/bg_demo.jpg);
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        background-attachment: fixed;
+        height: auto;
+    }
+
+    .layadmin-cmdlist-fluid {
+        background: rgba(255, 255, 255, 0.80);
+        margin-top: 0px;
+        padding-top: 30px;
+    }
+
+    .layadmin-cmdlist-fluid {
+        padding: 0px;
+        margin: 0px;
+    }
+</style>
+
+
+
+<div class="dialogue-wrapper">
+    <div id="btn_open" class="dialogue-support-btn">
+        <i class="dialogue-support-icon"></i>
+        <i class="dialogue-support-line"></i>
+        <span class="dialogue-support-text">在线咨询</span>
+    </div>
+</div>
+<style>
+    .dialogue-wrapper {
+        font-size: 14px;
+        color: #fff;
+    }
+
+    /*右侧点击按钮*/
+    .dialogue-wrapper .dialogue-support-btn {
+        position: fixed;
+        display: inline-block;
+        top: 50%;
+        right: 0;
+        margin-top: -70px;
+        padding: 10px 0;
+        width: 40px;
+        height: 120px;
+        font-size: 16px;
+        font-weight: 500;
+        text-align: center;
+        cursor: pointer;
+        border-top-left-radius: 5px;
+        border-bottom-left-radius: 5px;
+        box-shadow: -1px 1px 5px rgba(0, 0, 0, .4);
+        background-color: #5d94f3;
+    }
+
+    .dialogue-wrapper .dialogue-support-btn .dialogue-support-icon {
+        position: relative;
+        display: inline-block;
+        margin-bottom: -2px;
+        width: 20px;
+        height: 16px;
+        border-radius: 4px;
+        background-color: #fff;
+    }
+
+    .dialogue-wrapper .dialogue-support-btn .dialogue-support-icon:before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: -6px;
+        margin-left: -3px;
+        width: 0;
+        height: 0;
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 6px solid #fff;
+    }
+
+    .dialogue-wrapper .dialogue-support-btn .dialogue-support-line {
+        display: inline-block;
+        width: 100%;
+        height: 1px;
+        background-color: #ddd;
+    }
+
+    .dialogue-wrapper .dialogue-support-btn .dialogue-support-text {
+        padding: 5px 0;
+        letter-spacing: 4px;
+        writing-mode: vertical-rl;
+        -webkit-user-select: none;
+    }
+
+</style>
+<script>
+    var uname = ""; //用户编号
+    //注意：导航 依赖 element 模块，否则无法进行功能性操作
+    var $;
+    var layer;
+    var element;
+    var form;
+    layui.use(['element', 'layer', 'jquery', 'form',], function () {
+        element = layui.element;
+        layer = layui.layer;
+        $ = layui.jquery;
+        form = layui.form;
+
+        //绑定详情点击事件
+        $("#btn_open").click(function () {
+
+            var path = './ai_code/ai_chat.html';
+            layer.open({
+                type: 2,  //弹出类型
+                //skin: 'layui-layer-demo', //样式类名
+                title: 'AI对话页面',
+                anim: 2,    //弹出窗口使用的动画
+                area: ['80%', '800px'],  //设置弹出窗口的大小 宽度,高度
+                shadeClose: true, //开启遮罩关闭
+                content: path  //加载内容路径
+            });
+        });
+
+        //…
+    });
+</script>
+
+</html>

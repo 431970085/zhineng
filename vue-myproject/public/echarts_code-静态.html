@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学习路径图</title>
+    <!-- 引入 ECharts 库 -->
+    <script src="./static/echarts/jquery.3.6.0.min.js"></script>
+    <script src="./static/echarts/echarts.5.0.2.js"></script>
+</head>
+
+<body>
+<!-- 定义一个 DOM 容器用于显示 ECharts 图表 -->
+<div id="main" style="width: 800px; height: 600px;"></div>
+<script>
+    // 初始化 ECharts 实例
+    var myChart = echarts.init(document.getElementById('main'));
+
+    // 配置图表选项
+    var option = {
+        // 添加标题组件
+        title: {
+            text: '学习路径图',
+            left: 'center'
+        },
+        // 添加提示框组件
+        tooltip: {
+            trigger: 'item',
+            formatter: '{b}'
+        },
+        series: [
+            {
+                type: 'graph',
+                layout: 'none', // 使用直角坐标系布局，不使用力导向布局
+                symbolSize: 50,
+                edgeSymbol: ['circle', 'arrow'],
+                edgeSymbolSize: [10, 20], // 箭头大小和边的大小
+                data: [
+                    { name: '起点', x: 100, y: 300 },
+                    { name: '节点1', x: 300, y: 300 },
+                    { name: '节点2', x: 500, y: 300 },
+                    { name: '终点', x: 700, y: 300 }
+                ],
+                links: [
+                    { source: '起点', target: '节点1' },
+                    { source: '节点1', target: '节点2' },
+                    { source: '节点2', target: '终点' }
+                ],
+                lineStyle: {
+                    color: 'source', // 使用源节点的颜色作为线条颜色
+                    curveness: 0.3, // 线条曲度，非直角连接效果
+                    width: 2 // 线条宽度
+                },
+                // 节点标签样式
+                label: {
+                    show: true,
+                    position: 'top',
+                    color: '#333',
+                    fontSize: 14
+                },
+                // 节点样式
+                itemStyle: {
+                    color: '#008CBA'
+                }
+            }
+        ]
+    };
+
+    // 使用刚指定的配置项和数据显示图表。
+    myChart.setOption(option);
+
+    // 为节点添加点击事件
+    myChart.on('click', 'series.graph.data', function (params) {
+        alert('你点击了节点：' + params.name);
+    });
+</script>
+</body>
+
+</html>

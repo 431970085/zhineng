@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <title>用户登陆</title>
+    <link rel="stylesheet" type="text/css" href="./static/layui/css/layui.css"/>
+    <link rel="stylesheet" href="./static/layui/style/admin.css" media="all">
+    <link rel="stylesheet" href="./static/layui/style/login.css" media="all">
+    <script src="./static/layui/layui.js"></script>
+    <script src="./static/js/vue.js"></script>
+    <script src="./static/js/axios.min.js"></script>
+    <script src="request.js"></script>
+</head>
+<body class="my-body-info">
+<div id="app">
+    <div class="layadmin-user-login layadmin-user-display-show" id="LAY-user-login" style="display: none;">
+
+        <div class="layadmin-user-login-main">
+            <div class="layadmin-user-login-box layadmin-user-login-header">
+                <h2>用户登陆</h2>
+                <h3 style="text-align: center">{{mySystemName}}</h3>
+            </div>
+            <div class="layadmin-user-login-box layadmin-user-login-body layui-form">
+                <div class="layui-form-item">
+                    <select name="select01" id="select01" class="layui-select" lay-filter="select01">
+                        <option value="用户">用户登陆</option>
+                    </select>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layadmin-user-login-icon layui-icon layui-icon-username"
+                           for="LAY-user-login-username"></label>
+                    <input type="text" name="username" id="LAY-user-login-username" lay-verify="required"
+                           placeholder="用户名"
+                           v-model="username"
+                           class="layui-input">
+                </div>
+                <div class="layui-form-item">
+                    <label class="layadmin-user-login-icon layui-icon layui-icon-password"
+                           for="LAY-user-login-password"></label>
+                    <input type="password" name="password" id="LAY-user-login-password" lay-verify="required"
+                           v-model="password"
+                           placeholder="密码" class="layui-input">
+                </div>
+
+                <div class="layui-form-item" style="margin-bottom: 20px;">
+                    <div class="layui-col-md5">
+                        <input type="checkbox" name="remember" lay-skin="primary" title="记住密码">
+                    </div>
+                    <div class="layui-col-md3">
+                        <a href="retrievePassword.html" target="_blank" style="color: #222;margin-top:8px;display: inline-block; ">找回密码</a>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <button @click="myLogin()" class="layui-btn layui-btn-fluid" lay-filter="LAY-user-login-submit">
+                        登 入
+                    </button>
+                </div>
+                <div class="layui-form-item">
+                    <a href="index.html" class="layui-btn layui-btn-primary ">返回首页</a>
+                    <a href="register.html" class="layui-btn layui-btn-primary ">用户注册</a>
+                    <a href="/" class="layui-btn layui-btn-primary ">管理员登陆</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</body>
+
+<script>
+    var select01 = "用户";
+    layui.use('form', function () {
+        var form = layui.form;
+        form.on("select(select01)", function (data) {
+            select01 = data.value;
+        });
+
+    });
+    //注意：导航 依赖 element 模块，否则无法进行功能性操作
+    var layer;
+    layui.use(['element', 'layer'], function () {
+        var element = layui.element;
+        layer = layui.layer;
+        //…
+    });
+
+    layui.use('form', function () {
+        var form = layui.form;
+
+        form.on('submit(formDemo)', function (data) {
+            layer.msg(JSON.stringify(data.field));
+            return false;
+        });
+    });
+    // 存储
+    var app = new Vue({
+        el: '#app',
+        data() {
+            return {
+                mySystemName: "", //系统名称
+                codeImgURL: "", //验证码图片地址
+                code: "", //验证码
+                codeInput: "", //输入验证码
+                username: "test",//用户登录信息存储
+                password: "123456",//用户登录信息存储
+            }
+        },
+        created() {
+            this.mySystemName = mySystemName; //加载系统名称
+            this.refreshCode();
+
+        },
+        mounted() {
+
+        },
+        updated() {
+
+        },
+        methods: {
+            refreshCode() {  //刷新验证码
+
+            },
+            myLogin() {
+
+                if (this.username == "") {
+                    layer.msg("用户名不能为空");
+                    return false;
+                }
+                if (this.password == "") {
+                    layer.msg("密码不能为空");
+                    return false;
+                }
+
+                var url = '/selectAction';
+                var username = this.username;
+                var password = this.password;
+
+                if (select01 == '用户') {
+                    var data = {
+                        "sql": `select *
+                                from userinfo
+                                where name = '${username}'
+                                  and password = '${password}'`
+                    };
+                } else {
+                    var data = {
+                        "sql": `select *
+                                from adduser
+                                where shopname = '${username}'
+                                  and shoppassword = '${password}'`
+                    };
+                }
+                post(url, data).then(response => {
+                    if (response.status == 200) {
+                        if (response.data.length > 0) {
+                            sessionStorage.setItem("loginUserinfo", JSON.stringify(response.data[0]));
+                            localStorage.setItem("loginUserinfo", JSON.stringify(response.data[0]));
+                            localStorage.setItem("loginRole", select01);
+                            layer.msg('恭喜你，' + select01 + '登录成功', {
+                                offset: '15px'
+                                , icon: 1
+                            }, function () {
+                                window.location.href = "index.html";
+                            });
+                        } else {
+                            layer.alert("登陆账号或者密码错误");
+                        }
+                    } else {
+                        layer.alert(response.msg);
+                    }
+                }).catch(err => {
+                    console.log(err);
+                });
+            },
+        }
+    });
+
+</script>
+<style>
+    body {
+        background: url('./static/bgA-2.jpg');
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        background-attachment: fixed;
+    }
+
+    .layadmin-cmdlist-fluid {
+        background: rgba(255, 255, 255, 0.80);
+        margin-top: 0px;
+        padding-top: 30px;
+    }
+
+    .layadmin-user-login-main {
+        background-color: rgba(255, 255, 255, 0.5);
+    }
+</style>
+</html>

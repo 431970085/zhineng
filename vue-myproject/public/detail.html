@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <title>详情信息</title>
+    <link rel="stylesheet" type="text/css" href="./static/layui/css/layui.css"/>
+    <link rel="stylesheet" href="./static/layui/style/admin.css" media="all">
+    <link rel="stylesheet" href="./static/layui/style/login.css" media="all">
+    <script src="./static/layui/layui.js"></script>
+    <script src="./static/js/vue.js"></script>
+    <script src="./static/js/axios.min.js"></script>
+    <script src="request.js"></script>
+    <script src="//api.map.baidu.com/api?type=webgl&v=1.0&ak=2jgRj4GqAH4vnrCipo80NR6I2Qy1uW2U"></script>
+</head>
+<body class="my-body-info">
+<div id="app">
+    <!--导航条 start-->
+    <ul class="layui-nav layui-bg-blue" id="navDIV" lay-filter="" id="navDIV"
+        style="margin-bottom: 0px;text-align: center;">
+
+    </ul>
+    <!--导航条 end-->
+
+
+    <!--轮播图 start-->
+    <div class="layui-carousel" id="test1">
+        <div carousel-item="" id="carouselListDiv">
+        </div>
+    </div>
+    <!--轮播图 end-->
+    <div class="layui-container layadmin-cmdlist-fluid" style="padding-top: 30px;border-radius:10px;height: auto; ">
+
+        <div class="layui-row">
+            <div class="layui-col-md9">
+                <div class="layui-container" style="margin-top: 0px;padding-top: 10px;width: 100%;">
+                    <fieldset class="layui-elem-field layui-field-title site-title"
+                              style="text-align: center;margin: 0px">
+                        <legend><a name="compatibility">{{ datainfo.title }} 《{{ datainfo.type }}》</a></legend>
+                    </fieldset>
+
+                    <div>
+                        <div style="height: 10px;"></div>
+                        <div class="layui-elem-quote" style="margin: 0px;background-color: white;">
+                            <div style="font-size: 18px; margin-bottom: 0px;text-align: left;">
+                                类型：{{ datainfo.type }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                发布时间：{{ datainfo.createtime }}
+                                <div style="display: inline-block;float: right;margin-top: -8px;">
+                                    <button @click="shoucang()" class="layui-btn layui-btn-normal shoucang">点我收藏</button>
+                                    <button @click="pingfen()" class="layui-btn layui-btn-normal pingfen">点我评分</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="layui-col-md12" style="text-align: center">
+                            <form class="layui-form  layui-form-pane" action="#" method="post"
+                                  style="margin: 0px auto;">
+
+                                <div class="layui-form-item layui-form-text">
+                                    <label class="layui-form-label" style="text-align: left">课程知识点说明</label>
+                                    <div class="layui-input-block">
+                        <textarea rows="3" name="content" id="content" value="" placeholder="这里显示内容"
+                                  readonly="readonly"
+                                  class="layui-textarea contentshow">{{ datainfo.content }}</textarea>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <div style="text-align: center" @click="submitStudyinfo()">
+                                <video style="width: 100%;text-align: center"
+                                       :poster="datainfo.picurl"
+                                       :src="datainfo.intro" controls="controls"></video>
+                            </div>
+
+
+                        </div>
+
+                        <div class="layui-col-md12">
+
+                            <div class="layui-row" style="padding: 0px;">
+                                <div class="layui-col-md12" style="background: #eee;border-radius:20px; ">
+                                    <form class="layui-form layui-form-pane" action="#" onsubmit="return false;"
+                                          method="post">
+                                        <div class="layui-form-item layui-form-text">
+                                            <label class="layui-form-label" id="commentShow">评论信息显示</label>
+                                            <div class="layui-input-block">
+                                    <textarea name="content" v-model="content" placeholder="请输入评论内容"
+                                              class="layui-textarea"></textarea>
+                                            </div>
+                                        </div>
+                                        <button v-if="!loginUserinfo.name"
+                                                class="layui-btn layui-btn-fluid layui-btn-disabled">
+                                            登录以后才可以发布评论
+                                        </button>
+                                        <button v-if="loginUserinfo.name" @click="commentinfoSubmit($event)"
+                                                class="layui-btn layui-btn-fluid layui-btn-normal">
+                                            点我发布评论内容
+                                        </button>
+                                    </form>
+                                </div>
+
+
+                                <div style="margin-top: 30px;">
+                                    <div class="site-title"
+                                         style="text-align: center;font-size: 20px;border-left:0px;border-right:0px;border-bottom:0px;   ">
+                                        <fieldset style="border-radius: 10px;border: 1px solid #eee;">
+                                            <legend style="color: #999;">评论内容显示区域</legend>
+                                            <div v-for="(v,index) in commentinfoList">
+                                                <div class='comment'>
+                                                    <img :src='v.picurl' alt='head pic'/>
+                                                    <a class="name" href="">{{ v.username }}</a>
+                                                    <p>{{ v.content }}</p>
+                                                    <span>{{ v.addtime }}</span>
+                                                    <a v-on:click.prevent="dianzan($event)" :kid="v.id"
+                                                       class='up dianzan'
+                                                       href="#"><i :kid="v.id"
+                                                                   class="layui-icon layui-icon-praise"></i> <b
+                                                            :kid="v.id"
+                                                            style="font-size: 18px;color: green;">{{ v.likenum
+                                                        }}</b></a>
+                                                </div>
+                                            </div>
+
+                                        </fieldset>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+
+            </div>
+
+            <div class="layui-col-md3" style="background-color: rgba(253,252,252,0.85);padding: 10px">
+                <div class="layui-elem-quote" style="margin: 20px;background-color: #fff;">
+                    <p style="font-size: 18px; margin-bottom: 0px;text-align: left;">
+                        热门视频推荐
+                    </p>
+                </div>
+                <div v-for="v in myHotList" style="color: #f1f1f1;margin-bottom: 8px;">
+                    <div class="cmdlist-container" @click="showDetail(v.id)"
+                         style="border: 1px #ccc solid;border-radius: 10px;">
+                        <a href="#"
+                           style="text-align: center;width: 100%;display: block;padding-top: 10px;text-align: center;">
+                            <img :src="v.picurl" style="width: 80%;height: auto;border-radius:10px; ">
+                        </a>
+                        <a href="#">
+                            <div class="cmdlist-text">
+                                <p class="info"
+                                   style="height: auto;text-align: center;line-height: 18px;font-size: 12px;"><a
+                                        href="">{{ v.title }} 分类：{{ v.type }}</a></p>
+
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="clear: both;"></div>
+    <!--版权区域 \\-->
+    <div class="layui-footer footer footer-index"
+         style="text-align: center;background-color: rgba(0,0,0,0.8);padding: 10px;font-size: 15px;color: #eee;margin-top: 15px;">
+        <div class="layui-main">
+            <h4>© {{mySystemName}} 版权所有</h4>
+            <p>
+                {{mySystemName}} 前端页面
+            </p>
+        </div>
+    </div>
+    <!--版权区域 //-->
+
+</div>
+
+<style>
+
+    .contentshow {
+        font-size: 18px;
+        line-height: 2em;
+        text-indent: 2em;
+        text-align: left;
+    }
+
+    .comment {
+        margin-top: 4%;
+        margin-left: 14%;
+        padding: 2%;
+        width: 68%;
+        background-color: #ececec;
+        border: 1px dashed #888;
+        border-radius: 1em;
+        position: relative;
+        display: block;
+        text-align: left;
+    }
+
+
+    .comment:hover {
+        background-color: #eee;
+    }
+
+    .comment img {
+        position: absolute;
+        top: -1%;
+        left: -12%;
+        border-radius: 2em;
+        border: 2px solid #888;
+        width: 60px;
+        height: 60px;
+    }
+
+    .comment p {
+        text-indent: 2em;
+        margin-top: 0.4%;
+    }
+
+    .comment span {
+        position: absolute;
+        top: 10%;
+        right: 4%;
+        font-size: 0.9em;
+        font-weight: bold;
+        color: #444
+    }
+
+    .comment .name {
+        color: black;
+        font-weight: bold;
+        text-decoration: none;
+    }
+
+    .comment .name:hover {
+        text-decoration: underline;
+    }
+
+    .comment .up {
+        color: #555;
+        text-decoration: none;
+        position: absolute;
+        bottom: 1%;
+        right: 8%;
+    }
+
+    .comment .up:hover {
+        color: #000;
+    }
+
+    /*鼠标为手型*/
+    .tqm-page a, .tqm-page span {
+        cursor: pointer;
+        padding: 8px 20px;
+        font-size: 20px;
+    }
+
+    body {
+        height: auto;
+    }
+
+    .content .cont .title {
+        margin-bottom: 60px;
+    }
+
+    .content .cont .title a {
+        font-size: 16px;
+        color: #000 !important;
+    }
+
+    .content .cont .title .layui-breadcrumb span {
+        position: relative;
+        top: -1px;
+        margin: 0 16px;
+    }
+
+    .content .cont .title a.active, .content .cont .title a:hover {
+        color: #ff7f21 !important;
+    }
+
+    .content .cont .list-item .layui-fluid {
+        padding: 0;
+    }
+
+    .content .cont .list-item .item {
+        margin-bottom: 80px;
+        overflow: hidden;
+    }
+
+    .content .cont .list-item .item .img img {
+        width: 100%;
+    }
+
+    .content .cont .list-item .item .item-cont {
+        padding-left: 100px;
+    }
+
+    .content .cont .list-item .item .item-cont .go-icon {
+        width: 33px;
+        height: 11px;
+        display: block;
+        padding: 10px 0;
+        margin-top: 16px;
+    }
+
+    .content .cont .list-item .item .item-cont h3 {
+        font-size: 24px;
+        margin: 20px 0;
+    }
+
+    .content .cont .list-item .item .item-cont h3 .new-icon {
+        width: 36px;
+        height: 18px;
+        line-height: 18px;
+        text-align: center;
+        padding: 0;
+        margin: -3px 0 0 10px;
+    }
+
+    .content .cont .list-item .item .item-cont h5 {
+        font-size: 12px;
+        color: #ff7f21;
+        margin-bottom: 32px;
+    }
+
+    .content .cont .list-item .item .item-cont p {
+        line-height: 1.8em;
+    }
+
+    body {
+        background: url(static/bg_demo.jpg);
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        background-attachment: fixed;
+    }
+
+    .layadmin-cmdlist-fluid {
+        background: rgba(255, 255, 255, 0.80);
+        margin-top: 0px;
+        padding-top: 30px;
+    }
+</style>
+</body>
+<script>
+
+
+    //注意：导航 依赖 element 模块，否则无法进行功能性操作
+    var layer;
+    layui.use(['element', 'layer'], function () {
+        var element = layui.element;
+        layer = layui.layer;
+        //…
+    });
+    layui.use('carousel', function () {
+        var carousel = layui.carousel;
+        //建造实例
+        carousel.render({
+            elem: '#test1'
+            , width: '100%' //设置容器宽度
+            , arrow: 'always' //始终显示箭头
+            //, anim: 'updown' //切换动画方式
+        });
+    });
+
+
+    var app = new Vue({
+        el: '#app',
+        data() {
+            return {
+                mySystemName: "",
+                content: "",
+                datainfoid: 0,//用户登录信息存储
+                datainfo: {},//用户登录信息存储
+                commentinfoList: [],//用户登录信息存储
+                loginUserinfo: {},//用户登录信息存储
+                nowTime: "",   //当前时间
+                keyword: "",   //搜素关键词
+                myHotList: [],   //搜素关键词
+                myDataList: [],  //数据存储
+
+            }
+        },
+        created() {
+            this.mySystemName = mySystemName;//加载系统名称
+            getCarouselList();//查询轮播图
+            this.getSysteminfo();
+            this.getMyDataListList();
+            this.getCommentinfoList();
+            this.getLoginUserinfo();
+
+        },
+        mounted() {
+
+        },
+        methods: {
+            getSysteminfo() { //加载系统配置
+
+                this.nowTime = getNowTime();//获取当前时间
+                this.datainfoid = sessionStorage.getItem('datainfoid');//获取登录信息
+            },
+            getLoginUserinfo() { //获取登录用户
+                if (sessionStorage.getItem('loginUserinfo') != null) {
+                    this.loginUserinfo = JSON.parse(sessionStorage.getItem('loginUserinfo'));//获取登录信息
+                }
+            },
+            showDetail(dataid) { //显示详情
+                sessionStorage.setItem("datainfoid", dataid);
+                location.href = "detail.html";
+            },
+            submitStudyinfo() {
+                console.log("333333");
+                this.loginUserinfo = JSON.parse(sessionStorage.getItem('loginUserinfo'));
+                if (!sessionStorage.getItem('loginUserinfo')) {
+                    layer.alert("用户登陆以后才可以操作");
+                    return false;
+                }
+                var obj = {
+                    dsid: 0,
+                    uid: this.loginUserinfo.id,
+                    tid: this.datainfoid,
+                    addtime: getNowTime(),
+                    info: "无",
+                };  //对象信息
+                var that = this;
+                var url = '/updateAction';
+                var data = {
+                    "sql": `insert into studyinfo (dsid, uid, tid, addtime, info)
+                            values ('${obj.dsid}', '${obj.uid}', '${obj.tid}', '${obj.addtime}', '${obj.info}')`
+                }
+                post(url, data).then(response => {
+                    layer.msg("插入学习操作成功");  //弹窗提示
+                }).catch(err => {
+                    layer.msg("已经学习过该课程");  //弹窗提示
+                    console.error(err);
+                });
+            },
+            getCommentinfoList() { //查询评论
+                var that = this;
+                var url = '/selectAction';
+                var tid = this.datainfoid;
+                var data = {
+                    "sql": `select *
+                            from commentinfo
+                            where tid = '${tid}' `
+                }; //占位符 ${变量名}
+                post(url, data).then(response => {
+                    that.commentinfoList = response.data;
+                }).catch(err => {
+                    console.log(err);
+                });
+            },
+            commentinfoSubmit() { //获取登录用户
+                var that = this;
+                var url = '/updateAction';
+                var obj = {
+                    "tid": this.datainfoid,
+                    "username": this.loginUserinfo.name,
+                    "content": this.content,
+                    "id": 0,
+                    "likenum": 0,
+                    "addtime": getNowTime(),
+                    "picurl": this.loginUserinfo.picurl
+                };
+                var data = {
+                    "sql": `insert into commentinfo (id, tid, username, content, picurl, addtime, likenum)
+                            values ('${obj.id}', '${obj.tid}', '${obj.username}', '${obj.content}', '${obj.picurl}', '${obj.addtime}', '${obj.likenum}')`
+                }
+                post(url, data).then(response => {
+                    this.getCommentinfoList();
+                    //弹窗提示
+                    layer.msg(response.data, {
+                        offset: '15px'
+                        , icon: 1
+                    }, function () {
+
+                    });
+                }).catch(err => {
+                    console.log(err);
+                });
+            },
+            dianzan(e) { //点赞数量+1
+                if (!this.loginUserinfo.name) {
+                    layer.alert("用户登陆以后才可以点赞");
+                    return false;
+                }
+                var that = this;
+                var kid = e.target.getAttribute('kid');
+                var url = '/updateAction';
+                var data = {
+                    "sql": `update commentinfo
+                            set likenum=(likenum + 1)
+                            where id = '${kid}'`
+                }
+                post(url, data).then(response => {
+                    //console.log(response.data);
+                    //layer.msg(response.data);
+                    this.getCommentinfoList();
+                    //弹窗提示
+                    layer.msg(response.data, {
+                        offset: '15px'
+                        , icon: 1
+                    }, function () {
+
+                    });
+                }).catch(err => {
+                    console.log(err);
+                });
+            },
+            pingfen() {
+
+            },
+            baiduMyMap() {
+
+
+            },
+            shoucang() {
+                if (!this.loginUserinfo.name) {
+                    layer.alert("用户登陆以后才可以收藏");
+                    return false;
+                }
+                var that = this;
+                var obj = {"id": 0, "uid": this.loginUserinfo.id, "tid": this.datainfoid};
+                var url = '/updateAction';
+                var data = {
+                    "sql": `insert into shoucang (id, tid, uid)
+                            values ('${obj.id}', '${obj.tid}', '${obj.uid}')`
+                }
+                post(url, data).then(response => {
+                    that.getMyDataListList();//加载列表
+                    layer.msg("收藏成功");  //弹窗提示
+                    that.isDataShow = 1; //隐藏列表
+                }).catch(err => {
+                    layer.msg("已经收藏过");  //弹窗提示
+                    console.error(err);
+                });
+            },
+            pingfen() {
+                if (!this.loginUserinfo.name) {
+                    layer.alert("用户登陆以后才可以评分");
+                    return false;
+                }
+                if (score = prompt("请输入评分:0-5.0之间的数字")) {
+                    //判断评分是否有效
+                    if (parseFloat(score).toString() == "NaN") {
+                        layer.alert("评分只能为0.0-5.0中的数字");
+                        return false;
+                    }
+                    score = parseFloat(score);
+                    if (score < 0 || score > 5) {
+                        layer.alert("评分只能为0.0-5.0中的数字");
+                        return false;
+                    }
+                    var that = this;
+                    var obj = {"id": 0, "uid": this.loginUserinfo.id, "tid": this.datainfoid, "score": score};
+                    var url = '/updateAction';
+                    var data = {
+                        "sql": `insert into scoreinfo (id, uid, tid, score)
+                                values ('${obj.id}', '${obj.uid}', '${obj.tid}', '${obj.score}')`
+                    }
+                    post(url, data).then(response => {
+                        that.getMyDataListList();//加载列表
+                        layer.msg("评分成功");  //弹窗提示
+                        that.isDataShow = 1; //隐藏列表
+                    }).catch(err => {
+                        console.error(err);
+                    });
+                }
+            },
+            getMyDataListList() { //加载数据
+                var url = '/selectAction';
+                var dataid = this.datainfoid;
+                var data = {
+                    "sql": ` select *
+                             from datainfo
+                             where id = '${dataid}' `
+                }
+                post(url, data).then(response => {
+                    this.datainfo = response.data[0];
+
+                    sessionStorage.setItem("lng01", this.datainfo.intro.split(",")[0]);
+                    sessionStorage.setItem("lat01", this.datainfo.intro.split(",")[1]);
+                    sessionStorage.setItem("myname", this.datainfo.title);
+                    //layer.msg("数据查询成功");
+                }).catch(err => {
+                    console.log(err);
+                });
+
+                var url = '/selectAction';
+                var data = {
+                    "sql": ` select *
+                             from datainfo
+                             ORDER BY RAND()
+                             LIMIT 5 `
+                }
+                post(url, data).then(response => {
+                    this.myHotList = response.data;
+                    //layer.msg("数据查询成功");
+                }).catch(err => {
+                    console.log(err);
+                });
+            }
+        }
+    });
+</script>
+
+
+
+</html>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="./static/layui/css/layui.css"/>
+    <link rel="stylesheet" href="./static/layui/style/admin.css" media="all">
+    <link rel="stylesheet" href="./static/layui/style/login.css" media="all">
+    <script src="./static/layui/layui.js"></script>
+    <script src="./static/js/vue.js"></script>
+    <script src="./static/js/axios.min.js"></script>
+    <script src="request.js"></script>
+    <script src="./static/echarts/jquery.3.6.0.min.js"></script>
+    <script src="./static/echarts/echarts.5.0.2.js"></script>
+</head>
+
+<body>
+<div id="garps" class="container" style="width:100%;height: 100vh">
+    <script>
+
+        //请求路径
+        var url = ctx + "/selectAction";
+        var loginUserinfo = JSON.parse(sessionStorage.getItem('loginUserinfo'));//获取登录信息
+        var uid = loginUserinfo.id;
+        var uname = loginUserinfo.name;
+        //执行的sql语句  左表查询右边
+        var sql = `
+            SELECT lt.id    as val,
+                   lt.title as name,
+                   lt.type,
+                   CASE
+                       WHEN rt.tid IS NOT NULL THEN 1
+                       ELSE 0
+                       END  AS exists_in_right_table
+            FROM datainfo lt
+                     LEFT JOIN
+                 studyinfo rt ON lt.id = rt.tid and uid = ${uid};
+        `;
+        //初始化echarts实例
+        //柱状图
+        function getpieChart() {
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                dataType: 'json',
+                data: {"sql": sql},
+                cache: false,
+                success: function (data) {
+
+                    var data = data.data;
+                    var namesArr = [];
+                    var myLinks = [];
+                    namesArr.push({"name": uname});
+                    const typeSet = new Set();
+                    for (let j = 0; j < data.length; j++) {
+                        typeSet.add(data[j].type);
+                    }
+                    for (const item of typeSet) {
+                        var linkObj = {
+                            source: uname,
+                            target: item,
+                            value: '学习'
+                        };
+                        myLinks.push(linkObj)
+                    }
+
+
+                    for (let j = 0; j < data.length; j++) {
+                        namesArr.push({"name": data[j].name});
+                        namesArr.push({"name": data[j].type});
+                        var name = data[j].name;
+                        var type = data[j].type;
+                        var exists_in_right_table = data[j].exists_in_right_table;
+                        if (exists_in_right_table == 1) {
+                            var linkObj = {
+                                source: type,
+                                target: name,
+                                value: '学习'
+                            };
+                            myLinks.push(linkObj)
+                        }
+                    }
+                    //去重
+                    const uniqueArr = [];
+                    const ids = new Set();
+                    namesArr.forEach(item => {
+                        if (!ids.has(item.name)) {
+                            uniqueArr.push(item);
+                            ids.add(item.name);
+                        }
+                    });
+                    var namesArr = uniqueArr;
+                    console.log(namesArr)
+                    console.log(myLinks)
+
+                    var chart_b859ef36a1b245b2b1eb24efe9b62146 = echarts.init(
+                        document.getElementById('garps'), 'white', {renderer: 'canvas'});
+                    option = {
+                        backgroundColor: '	#FFFAFA',//这块是背景色可以改成无色或白色
+                        grid: {
+                            left: '10%',
+                            top: 60,
+                            right: '10%',
+                            bottom: 60,
+                        },
+                        toolbox: {
+                            feature: {
+                                saveAsImage: {}
+                            }
+                        },
+                        series: [{
+                            type: 'graph',
+                            layout: 'force',
+                            force: {
+                                repulsion: 1000,
+                                edgeLength: 70,
+                                layoutAnimation: true,
+                            },
+                            symbolSize: 70,
+                            nodeScaleRatio: 1, //图标大小是否随鼠标滚动而变
+                            roam: true, //缩放
+                            draggable: true, //节点是否可以拖拽
+                            focusNodeAdjacency: false, //是否在鼠标移到节点上的时候突出显示节点以及节点的边和邻接节点
+                            edgeSymbol: ['circle', 'arrow'], //线2头标记
+                            label: {
+                                normal: {
+                                    show: true,
+                                    position: 'inside',
+                                    fontSize: 12,
+                                    color: 'white'
+                                }
+                            },
+                            edgeLabel: {
+                                normal: {
+                                    show: true,
+                                    textStyle: {
+                                        fontSize: 12,
+                                        color: '#fff'
+                                    },
+                                    formatter: "{c}"
+                                }
+                            },
+                            categories: [
+                                {
+                                    name: '学习',
+                                }, {
+                                    name: '用户',
+
+                                    symbol: 'rect'
+                                }
+                            ],
+                            itemStyle: {
+                                normal: {
+                                    borderColor: '#04f2a7',
+                                    borderWidth: 2,
+                                    shadowBlur: 10,
+                                    shadowColor: '#04f2a7',
+                                    color: function () {
+                                        return `rgb(${parseInt(Math.random() * 255)},${parseInt(Math.random() * 255)},${parseInt(Math.random() * 255)})`
+                                    },
+                                }
+                            },
+                            lineStyle: {
+                                normal: {
+                                    opacity: 0.9,
+                                    width: 2,
+                                    curveness: 0,
+                                    color: {
+                                        type: 'linear',
+                                        x: 0,
+                                        y: 0,
+                                        x2: 0,
+                                        y2: 1,
+                                        colorStops: [{
+                                            offset: 0,
+                                            color: '#e0f55a' // 0% 处的颜色
+                                        }, {
+                                            offset: 1,
+                                            color: '#639564' // 100% 处的颜色
+                                        }],
+                                        globalCoord: false // 缺省为 false
+                                    }
+                                }
+                            },
+                            symbolKeepAspect: false,
+                            data: namesArr,
+                            links: myLinks,
+                        }]
+                    }
+                    chart_b859ef36a1b245b2b1eb24efe9b62146.setOption(option);
+                    // 为节点添加点击事件
+                    chart_b859ef36a1b245b2b1eb24efe9b62146.on('click', 'series.graph.data', function (params) {
+                        console.log('你点击了节点：' + params.name);
+                        alert('你点击了节点：' + params.name);
+                    });
+
+                },
+                error: function (responseStr) {
+                    alert("数据类模板数量查询失败！");
+                }
+            });
+        }
+
+        $(function () {
+            //加载饼图
+            getpieChart();
+        });
+    </script>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>课程知识点学习情况统计</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <style>
+        #myEcharts02 {
+            width: 800px;
+            height: 500px;
+            /*border: solid 1px red;*/
+            margin: 50px auto;
+
+        }
+    </style>
+    <script src="../static/js/vue.js"></script>
+    <script src="../static/js/axios.min.js"></script>
+    <script src="../request.js"></script>
+    <script src="../static/echarts/jquery.3.6.0.min.js"></script>
+    <script src="../static/echarts/echarts.5.0.2.js"></script>
+    <style>
+        #myEcharts02 {
+            width: 800px;
+            height: 500px;
+            /*border: solid 1px red;*/
+            margin: 50px auto;
+
+        }
+    </style>
+</head>
+<body>
+<div class="layui-container">
+
+
+    <!--为echarts准备一个dom容器-->
+    <div id="myEcharts02"></div>
+    <script>
+
+        //请求路径
+        var url = ctx+"/selectAction";
+        //执行的sql语句
+        var sql = " select type as name,count(*) as val from studyinfo,datainfo where studyinfo.tid=datainfo.id group by type ";
+        //初始化echarts实例
+        //柱状图
+        function getpieChart() {
+            var pieData = [];
+            var legendData = [];
+            $.ajax({
+                url: url,
+                type: 'POST',
+                dataType: 'json',
+                data: {"sql": sql},
+                cache: false,
+                success: function (data) {
+                    var data = data.data;
+                    for (let j = 0; j < data.length; j++) {
+                        var value = data[j].val;
+                        var name = data[j].name;
+                        var o = {value: parseInt(value), name: name};
+                        pieData.push(o);
+                        legendData.push(name);
+                    }
+                    console.log(pieData);
+                    console.log(legendData);
+                    //饼图
+                    var pieChart = echarts.init(document.getElementById("myEcharts02"));
+                    var pieoption = {
+                        title: {
+                            text: '课程知识点学习情况统计',
+                            left: 'center'
+                        },
+                        toolbox: {
+                            show: true,
+                            feature: {
+                                mark: {show: true},
+                                dataView: {show: true, readOnly: false},
+                                magicType: {
+                                    show: true,
+                                    type: ['pie', 'funnel'],
+                                    option: {
+                                        funnel: {
+                                            x: '25%',
+                                            width: '50%',
+                                            funnelAlign: 'left',
+                                            max: 1548
+                                        }
+                                    }
+                                },
+                                restore: {show: true},
+                                saveAsImage: {show: true}
+                            }
+                        },
+                        tooltip: {
+                            trigger: 'item'
+                        },
+                        //设置饼状图每个颜色块的颜色
+                        legend: {
+                            data: legendData,
+                            orient: 'vertical',
+                            left: '0px',
+                        },
+                        series: [
+
+                            {
+
+                                name: '课程',
+                                // radius: ['20%', '80%'], 圆形圈
+                                radius: '55%',
+                                hoverAnimation: true,
+                                avoidLabelOverlap: true,
+                                label: {
+                                    show: true, // 显示标签
+                                    position: 'inside', // 在饼图内部显示标签
+                                    formatter: '{b}：{d}%'
+                                },
+                                type: 'pie',
+                                data: pieData,
+                                emphasis: {
+                                    itemstyle: {
+                                        shadowBlur: 10,
+                                        shadowOffsetX: 0,
+                                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                    }
+                                }
+                            }
+                        ]
+                    };
+                    pieChart.setOption(pieoption);
+                    $(window).resize(pieChart.resize);
+
+                },
+                error: function (responseStr) {
+                    alert("数据类模板数量查询失败！");
+                }
+            });
+
+
+        }
+
+
+        $(function () {
+            //加载饼图
+            getpieChart();
+        });
+    </script>
+
+</div>
+</body>
+</html>

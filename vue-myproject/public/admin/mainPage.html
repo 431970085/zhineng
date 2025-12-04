@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>登陆</title>
+    <link rel="stylesheet" type="text/css" href="../static/layui/css/layui.css"/>
+    <script src="../static/layui/layui.js"></script>
+    <script src="../static/js/vue.js"></script>
+    <script src="../static/js/axios.min.js"></script>
+    <script src="../request.js"></script>
+    <script>
+        if (sessionStorage.getItem('loginAdmin') == null) {
+            alert("登录以后才可以访问系统");
+            window.location.href = "login.html";
+        }
+    </script>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin" id="app">
+    <div class="layui-header">
+        <div class="layui-logo">管理系统后台</div>
+        <!-- 头部区域（可配合layui已有的水平导航） -->
+        <ul class="layui-nav layui-layout-left">
+            <li class="layui-nav-item">
+                <h3 style="text-align: center;text-align: center">{{mySystemName}}</h3>
+            </li>
+            <li class="layui-nav-item">
+                <a href="../index.html" target="_blank"><i class="layui-icon layui-icon-home"></i>系统首页</a>
+            </li>
+        </ul>
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <img :src="loginAdmin.headimg" class="layui-nav-img">
+                    {{ loginAdmin.adminname }}【{{ loginAdmin.role }}】
+                </a>
+                <dl class="layui-nav-child">
+                    <dd><a href="adminUserinfo.html"
+                           target="tqmContent">修改密码</a></dd>
+                    <dd><a href="adminUserinfo.html"
+                           target="tqmContent">个人中心</a>
+                    </dd>
+                    <dd><a href="../index.html">退出登录</a>
+                    </dd>
+                </dl>
+
+            </li>
+        </ul>
+    </div>
+
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+
+            <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+            <ul class="layui-nav layui-nav-tree" lay-filter="test">
+
+                <li class="layui-nav-item" v-show="loginAdmin.role=='管理员' || loginAdmin.role=='系统管理员'">
+                    <a href="javascript:;">管理员信息管理</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="admininfoList.html" target="tqmContent">管理员信息列表</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="javascript:;">数据可视化统计</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="echarts01.html" target="tqmContent">用户信息统计</a></dd>
+                        <dd><a href="echarts02.html" target="tqmContent">分类信息统计</a></dd>
+                        <dd><a href="echarts03.html" target="tqmContent">学习次数统计</a></dd>
+                        <dd><a href="echarts04.html" target="tqmContent">课程知识学习统计</a></dd>
+                    </dl>
+                </li>
+
+                <li class="layui-nav-item">
+                    <a href="javascript:;">轮播图管理</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="carouselList.html" target="tqmContent">轮播图列表</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="javascript:;">课程评价管理</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="commentinfoList.html" target="tqmContent">课程评价列表</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="javascript:;">课程信息管理</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="datainfoList.html" target="tqmContent">课程信息列表</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="javascript:;">公告信息管理</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="noticeinfoList.html" target="tqmContent">公告信息列表</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="javascript:;">视频评分管理</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="scoreinfoList.html" target="tqmContent">视频评分列表</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="javascript:;">收藏信息管理</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="shoucangList.html" target="tqmContent">收藏信息列表</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="javascript:;">分类信息管理</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="sorttypeList.html" target="tqmContent">分类信息列表</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="javascript:;">学习记录管理</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="studyinfoList.html" target="tqmContent">学习记录列表</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="javascript:;">用户信息管理</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="userinfoList.html" target="tqmContent">用户信息列表</a></dd>
+                    </dl>
+                </li>
+
+
+            </ul>
+        </div>
+    </div>
+
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <!-- 内容主体区域 -->
+        <div style="padding: 0px;height: 100%;width: 100%;">
+            <iframe src="sorttypeList.html" name="tqmContent"
+                    style="border: 0px solid blue;height: 100%;width: 100%;scrolling:auto;">
+            </iframe>
+        </div>
+    </div>
+
+    <div class="layui-footer">
+        <!-- 底部固定区域 -->
+        {{mySystemName}} - 底部版权区域
+    </div>
+</div>
+</body>
+
+
+<script>
+
+
+    //注意：导航 依赖 element 模块，否则无法进行功能性操作
+    var layer;
+    layui.use(['element', 'layer'], function () {
+        var element = layui.element;
+        layer = layui.layer;
+        //…
+    });
+
+
+    // 存储
+    var app = new Vue({
+        el: '#app',
+        data() {
+            return {
+                mySystemName: "",//系统名称
+                loginAdmin: {},//用户登录信息存储
+                myDataList: []  //数据存储
+            }
+        },
+        created() {
+            this.mySystemName = mySystemName; //加载系统名称
+            this.getSysteminfo();
+            this.getLoginUserinfo();
+        },
+        mounted() {
+
+        },
+        updated() {
+
+        },
+        methods: {
+            getSysteminfo() { //加载系统配置
+
+            },
+            getLoginUserinfo() { //获取登录用户
+                if (localStorage.getItem('loginAdmin') != null) {
+                    this.loginAdmin = JSON.parse(localStorage.getItem('loginAdmin'));//获取登录信息
+                    console.log(this.loginAdmin)
+                }
+            },
+            getMyDataListList() { //加载系统配置
+
+            },
+
+
+        }
+    });
+
+
+</script>
+
+</html>
